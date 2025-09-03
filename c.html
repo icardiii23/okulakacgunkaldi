@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Okul Açılışına Geri Sayım</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --card:#111827ee; /* gray-900 */
+      --text:#e5e7eb; /* gray-200 */
+      --accent:#22d3ee; /* cyan-400 */
+      --muted:#94a3b8; /* slate-400 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; 
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 70% -10%, #1f2937 0%, var(--bg) 60%), var(--bg);
+      color:var(--text);
+      display:grid; place-items:center; padding:24px;
+    }
+    .wrap{
+      width:min(960px, 100%);
+      display:grid; gap:18px;
+    }
+    header{
+      text-align:center;
+    }
+    h1{font-size:clamp(24px, 4vw, 40px); margin:0; letter-spacing:.3px}
+    p.subtitle{margin:.25rem 0 0; color:var(--muted)}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px; padding:20px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+
+    .countdown{
+      display:grid; grid-template-columns: repeat(4, 1fr); gap:14px;
+    }
+    @media (max-width:640px){
+      .countdown{grid-template-columns: repeat(2, 1fr)}
+    }
+
+    .unit{
+      background: #0b1222;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px; padding:16px; text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .unit::after{ /* subtle glow */
+      content:''; position:absolute; inset:auto -40% -60% -40%; height:120%;
+      background: radial-gradient(180px 80px at 50% 100%, rgba(34,211,238,.25), transparent);
+      filter: blur(14px);
+    }
+    .value{ font-variant-numeric: tabular-nums; font-weight:700; 
+      font-size: clamp(36px, 8vw, 64px); line-height:1; }
+    .label{ margin-top:6px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; font-size:12px }
+
+    .footer{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px
+    }
+    .target{ color:var(--text)}
+
+    .done{ text-align:center; font-size:clamp(20px, 4vw, 28px); color:#bbf7d0 }
+
+    .blink{ animation: blink 1s steps(2,end) infinite }
+    @keyframes blink { to { visibility:hidden } }
+
+    .edit-tip{font-size:12px; color:var(--muted)}
+    code{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Okul Açılışına Geri Sayım</h1>
+      <p class="subtitle">Gün • Saat • Dakika • Saniye</p>
+    </header>
+
+    <section class="card" id="timer-card" aria-live="polite">
+      <div class="countdown" id="countdown" role="timer" aria-atomic="true">
+        <div class="unit"><div class="value" id="days">00</div><div class="label">Gün</div></div>
+        <div class="unit"><div class="value" id="hours">00</div><div class="label">Saat</div></div>
+        <div class="unit"><div class="value" id="mins">00</div><div class="label">Dakika</div></div>
+        <div class="unit"><div class="value" id="secs">00</div><div class="label">Saniye</div></div>
+      </div>
+      <div class="done" id="done" hidden>
+        🎉 Okul bugün açıldı! Başarılarla dolu bir dönem dileriz.
+      </div>
+    </section>
+
+    <section class="footer">
+      <div>Hedef tarih: <span class="target" id="targetText">—</span></div>
+    </section>
+  </main>
+
+  <script>
+    // === AYAR ===
+    // Okul başlangıç tarihini buradan değiştirin.
+    // Format örnekleri: "2025-09-09 08:30" veya "September 9, 2025 08:30"
+    const TARGET = "2025-09-08 08:30"; // <-- DÜZENLEYİN
+
+    // === KOD ===
+    const targetDate = new Date(TARGET);
+    const targetText = document.getElementById('targetText');
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minsEl = document.getElementById('mins');
+    const secsEl = document.getElementById('secs');
+    const countdown = document.getElementById('countdown');
+    const done = document.getElementById('done');
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function render(){
+      const now = new Date();
+      const diff = targetDate - now; // ms
+
+      if (isNaN(targetDate.getTime())){
+        targetText.textContent = 'Hatalı tarih. TARGET değerini kontrol edin.';
+        countdown.style.opacity = .5; return;
+      }
+
+      targetText.textContent = targetDate.toLocaleString('tr-TR', { dateStyle:'full', timeStyle:'short' });
+
+      if (diff <= 0){
+        countdown.hidden = true;
+        done.hidden = false;
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+
+      daysEl.textContent = pad(days);
+      hoursEl.textContent = pad(hours);
+      minsEl.textContent = pad(mins);
+      secsEl.textContent = pad(secs);
+    }
+
+    render();
+    const tick = setInterval(render, 1000);
+  </script>
+</body>
+</html>
