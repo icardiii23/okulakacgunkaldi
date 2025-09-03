@@ -24,9 +24,11 @@
     .wrap{
       width:min(960px, 100%);
       display:grid; gap:18px;
+      animation: fadeInUp 1.2s ease both;
     }
     header{
       text-align:center;
+      animation: fadeInDown 1s ease both;
     }
     h1{font-size:clamp(24px, 4vw, 40px); margin:0; letter-spacing:.3px}
     p.subtitle{margin:.25rem 0 0; color:var(--muted)}
@@ -37,6 +39,7 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:18px; padding:20px; 
       box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      animation: scaleIn 1s ease both .4s;
     }
 
     .countdown{
@@ -51,7 +54,14 @@
       border:1px solid rgba(255,255,255,.06);
       border-radius:16px; padding:16px; text-align:center;
       position:relative; overflow:hidden;
+      opacity:0; transform:translateY(20px);
+      animation: fadeInUp .8s ease forwards;
     }
+    .unit:nth-child(1){animation-delay:.6s}
+    .unit:nth-child(2){animation-delay:.8s}
+    .unit:nth-child(3){animation-delay:1s}
+    .unit:nth-child(4){animation-delay:1.2s}
+
     .unit::after{ /* subtle glow */
       content:''; position:absolute; inset:auto -40% -60% -40%; height:120%;
       background: radial-gradient(180px 80px at 50% 100%, rgba(34,211,238,.25), transparent);
@@ -66,13 +76,31 @@
     }
     .target{ color:var(--text)}
 
-    .done{ text-align:center; font-size:clamp(20px, 4vw, 28px); color:#bbf7d0 }
+    .done{ text-align:center; font-size:clamp(20px, 4vw, 28px); color:#bbf7d0; animation: fadeIn 1s ease both }
 
     .blink{ animation: blink 1s steps(2,end) infinite }
     @keyframes blink { to { visibility:hidden } }
 
     .edit-tip{font-size:12px; color:var(--muted)}
     code{color:var(--accent)}
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {opacity:0; transform:translateY(20px)}
+      to {opacity:1; transform:translateY(0)}
+    }
+    @keyframes fadeInDown {
+      from {opacity:0; transform:translateY(-20px)}
+      to {opacity:1; transform:translateY(0)}
+    }
+    @keyframes scaleIn {
+      from {opacity:0; transform:scale(.95)}
+      to {opacity:1; transform:scale(1)}
+    }
+    @keyframes fadeIn {
+      from {opacity:0}
+      to {opacity:1}
+    }
   </style>
 </head>
 <body>
@@ -95,14 +123,12 @@
     </section>
 
     <section class="footer">
-      <div>Hedef tarih: <span class="target" id="targetText">—</span></div>
+      <div>Hedef Tarih: <span class="target" id="targetText">—</span></div>
     </section>
   </main>
 
   <script>
     // === AYAR ===
-    // Okul başlangıç tarihini buradan değiştirin.
-    // Format örnekleri: "2025-09-09 08:30" veya "September 9, 2025 08:30"
     const TARGET = "2025-09-08 08:30"; // <-- DÜZENLEYİN
 
     // === KOD ===
